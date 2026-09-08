@@ -142,6 +142,7 @@ Termly CLI supports **23+ interactive terminal-based AI coding assistants**:
 
 ### Official Tools from Major Companies
 - **Claude Code** (Anthropic) - AI coding assistant
+  - Also available as `--ai flaude` for setups where the Claude Code binary is installed/aliased as `flaude` instead of `claude`
 - **GitHub Copilot CLI** (Microsoft) - Command line AI
 - **Cursor CLI** (Cursor) - AI coding assistant CLI
 - **Cody CLI** (Sourcegraph) - AI assistant (Beta)
@@ -169,6 +170,39 @@ Termly CLI supports **23+ interactive terminal-based AI coding assistants**:
 - **Any other terminal-based AI tool**
 
 **And more...** - Works with any terminal-based AI tool that supports interactive TTY mode
+
+### Define Your Own Tools and Models
+
+Not in the list? Add it yourself - no Termly release needed:
+
+```bash
+termly tools init       # creates ~/.termly/tools.json with an example
+termly tools validate   # check it
+termly tools list       # your tools, merged with the built-ins
+```
+
+```json
+{
+  "version": 1,
+  "tools": [
+    {
+      "key": "claude-opus",
+      "command": "claude",
+      "args": ["--model", "opus"],
+      "displayName": "Claude Code (Opus)",
+      "protocolKey": "claude-code"
+    }
+  ],
+  "overrides": {
+    "ollama": { "args": ["run", "qwen2.5-coder:32b"] }
+  }
+}
+```
+
+`tools[]` adds new entries, `overrides{}` patches built-in ones. A "model" is
+just a tool definition with different `args` or `env`.
+
+See **[docs/CUSTOM_TOOLS.md](docs/CUSTOM_TOOLS.md)** for the full field reference.
 
 ## Commands
 
@@ -245,6 +279,9 @@ Quick list of active sessions with encryption fingerprints for verification.
 termly tools list           # List available AI tools
 termly tools detect         # Detect installed tools
 termly tools info <tool>    # Show tool information
+termly tools init           # Create ~/.termly/tools.json for custom tools
+termly tools config         # Show custom tool definitions
+termly tools validate       # Validate ~/.termly/tools.json
 ```
 
 ### Config

@@ -71,7 +71,7 @@ program
 // Tools command
 program
   .command('tools <action> [tool-name]')
-  .description('Manage AI tools (actions: list, detect, info)')
+  .description('Manage AI tools (actions: list, detect, info, init, config, validate)')
   .action(async (action, toolName) => {
     await toolsCommand(action, toolName);
   });
@@ -104,6 +104,11 @@ program.on('--help', () => {
   console.log('  $ termly-dev start                          # Same as just "termly-dev"');
   console.log('  $ termly-dev tools list                     # List available tools');
   console.log('  $ termly-dev status                         # Show all sessions');
+  console.log('');
+  console.log('Custom AI tools & models:');
+  console.log('  $ termly tools init                     # Scaffold ~/.termly/tools.json');
+  console.log('  $ termly tools config                   # Show custom tool definitions');
+  console.log('  $ termly tools validate                 # Check the file for errors');
   console.log('');
   console.log('Special modes:');
   console.log('  --ai demo    Demo mode for testing (no AI agent installation required)');
