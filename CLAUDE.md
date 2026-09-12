@@ -139,8 +139,8 @@ The CLI uses **@lydell/node-pty** - a fork of the official node-pty that include
 - **TUI apps (OpenCode):** Buffer is skipped - they redraw full screen, catchup is useless
 
 **TUI Mode (`lib/session/pty-manager.js`):**
-- Enabled for apps in `tuiTools` array (currently: `['opencode']`)
-- `isTUIMode` flag set in constructor based on tool.key
+- Enabled per tool via the `tui: true` field (built-ins: `opencode`, `kilo`)
+- `isTUIMode` flag set in constructor from `tool.tui`
 - TUI apps use alternate screen buffer, internal scroll, mouse events
 - Buffer writes skipped for TUI - no catchup on reconnect
 - Screen cleared on mobile connect/reconnect (only for TUI apps)
@@ -178,8 +178,15 @@ The CLI uses **@lydell/node-pty** - a fork of the official node-pty that include
 ### AI Tool Detection
 
 **Registry (`lib/ai-tools/registry.js`):**
-- Defines all supported tools with `command`, `args`, `checkInstalled()`
-- Tools: claude-code, aider, codex, github-copilot, gemini, grok, and 10+ more (see lib/ai-tools/registry.js)
+- `BUILTIN_AI_TOOLS` defines shipped tools as plain data (`command`, `args`, `tui`, `hidden`, `install`, ...)
+- Merged at runtime with `~/.termly/tools.json` via `lib/ai-tools/user-config.js`
+- `getAllTools()` / `getVisibleTools()` / `getToolByKey()` read the merged result (memoized; `resetRegistry()` clears)
+- Tools: claude-code, flaude, aider, codex, github-copilot, gemini, grok, and 14+ more
+
+**Supporting modules:**
+- `lib/ai-tools/schema.js` - validates/normalizes a tool definition, derives `checkInstalled()`
+- `lib/ai-tools/probe.js` - `commandExists()` / `getToolVersion()` via `execFile` (no shell)
+- `lib/ai-tools/user-config.js` - loads `~/.termly/tools.json` (fail-soft; never blocks start)
 
 **Auto-Detection (`lib/ai-tools/detector.js`):**
 - Runs `command -v <tool>` for each registered tool
@@ -207,6 +214,11 @@ The CLI uses **@lydell/node-pty** - a fork of the official node-pty that include
 - All magic numbers and configuration values must be defined here
 - Never hardcode numeric constants in other files
 - Import constants: `const { CONSTANT_NAME } = require('../config/constants');`
+
+**Custom tools file:** `~/.termly/tools.json` (override with `TERMLY_TOOLS_FILE`)
+- User-defined AI tools and overrides of built-ins; see `docs/CUSTOM_TOOLS.md`
+- Fail-soft: invalid entries warn and are skipped, built-ins always load
+- Home directory only - project-local tool files are intentionally unsupported
 
 **Sessions file:** `~/.termly/sessions.json`
 - Array of session objects
@@ -292,8 +304,9 @@ CLI tracks its status (`idle` or `busy`) to enable server-side push notification
 **Testing without server:**
 The implementation includes WebSocket client code but the actual server (api.termly.dev) is not implemented. For testing, the `start` command will generate pairing code and QR but won't complete the WebSocket handshake.
 
-**Adding new AI tools:**
-Edit `lib/ai-tools/registry.js`:
+**Adding new AI tools (shipped with Termly):**
+Edit `BUILTIN_AI_TOOLS` in `lib/ai-tools/registry.js`. Entries are plain data -
+`checkInstalled()` is derived automatically from `command` / `checkCommand`:
 ```javascript
 'tool-name': {
   key: 'tool-name',
@@ -302,16 +315,27 @@ Edit `lib/ai-tools/registry.js`:
   displayName: 'Tool Display Name',
   description: 'Description',
   website: 'https://tool.website',
-  checkInstalled: async () => await commandExists('command-to-run')
+  install: 'npm install -g tool-name',  // shown when missing
+  tui: false,                           // alternate screen buffer app
+  hidden: false                         // exclude from list + auto-detect
 }
 ```
 
-**Adding TUI tools (alternate screen buffer apps):**
-Edit `lib/session/pty-manager.js` and add to `tuiTools` array:
-```javascript
-this.tuiTools = ['opencode', 'your-new-tui-tool'];
-```
+**Adding tools without a release:** users define them in `~/.termly/tools.json`
+(`termly tools init` / `config` / `validate`). See `docs/CUSTOM_TOOLS.md`.
+The registry merges: builtins <- config `overrides` <- config `tools`.
+
+**TUI tools (alternate screen buffer apps):** set `tui: true` on the tool
+definition. `pty-manager.js` reads `tool.tui` - there is no hardcoded list.
 TUI tools: skip buffer writes, clear screen on connect, mobile handles mouse events.
+
+**Per-tool environment:** a definition's `env` map is merged over `process.env`
+at spawn time (`pty-manager.js`). This is how a definition pins a model,
+e.g. `{"env": {"ANTHROPIC_MODEL": "claude-opus-5"}}`.
+
+**Tool command safety:** commands can come from a user config file, so they are
+never interpolated into a shell string. `lib/ai-tools/probe.js` uses `execFile`,
+and `lib/ai-tools/schema.js` rejects shell metacharacters at load time.
 
 ## Files to Check When...
 
@@ -325,7 +349,9 @@ TUI tools: skip buffer writes, clear screen on connect, mobile handles mouse eve
 
 **PTY problems:** `lib/session/pty-manager.js` (spawning/IO) + `lib/session/buffer.js` (buffering)
 
-**TUI mode issues:** `lib/session/pty-manager.js` (tuiTools array, isTUIMode flag, buffer skip)
+**TUI mode issues:** `lib/session/pty-manager.js` (`tool.tui` -> isTUIMode flag, buffer skip)
+
+**Custom/config-defined tools:** `lib/ai-tools/user-config.js` (loading) + `lib/ai-tools/schema.js` (validation) + `lib/ai-tools/registry.js` (merge)
 
 **Configuration changes:** `lib/config/manager.js` (schema must match conf requirements)
 
