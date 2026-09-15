@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "key": "tmux-window",
+      "command": "/home/developer/.termly/scripts/tmux-attach-window.sh",
+      "args": [],
+      "displayName": "tmux — lubovolne okno",
+      "description": "Izolovana session s jedinym linknutym oknom z lubovolnej session/okna - zadaj cez --ai-args \"<session> <okno>\", napr. --ai-args \"main dboard\"",
+      "website": "https://github.com/tmux/tmux",
+      "install": "apt install tmux",
+      "tui": true,
+      "checkCommand": "tmux",
+      "versionArgs": [
+        "-V"
+      ]
+    }
+  ]
+}
