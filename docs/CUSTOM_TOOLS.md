@@ -123,3 +123,9 @@ Rejected outright:
 
 Commands are spawned with `execFile` / `pty.spawn` and probed via `execFile` —
 never through a shell string — so a definition cannot inject shell syntax.
+
+## Example
+
+See [`docs/examples/tools/`](examples/tools/) for a complete worked example —
+a `tmux-window` entry that attaches an AI session to an isolated view of a
+single linked tmux window, picked at invocation time via `--ai-args`.

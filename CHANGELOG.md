@@ -5,6 +5,27 @@ All notable changes to Termly CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Custom AI tools and models via `~/.termly/tools.json` — add or repoint a
+  tool without waiting for a release (`termly tools init|validate|config|list`).
+  See [docs/CUSTOM_TOOLS.md](docs/CUSTOM_TOOLS.md).
+- `TERMLY_SERVER_URL` (and `TERMLY_API_URL`) to point the CLI at a
+  self-hosted relay instead of `api.termly.dev`; the URL also flows into the
+  mobile app's pairing QR code.
+- Terminal size is now announced when registering a pairing code.
+- Worked example for a custom tool: attaching an isolated tmux window as an
+  AI "tool" (`docs/examples/tools/`).
+
+### Fixed
+- `termly config set defaultAI <tool>` previously had no effect on `termly
+  start` — the configured value was stored but never read. `termly start`
+  now actually uses it, falling back to auto-detection with a warning if the
+  configured tool is unknown or not installed.
+- The CLI now adopts the session id the relay mints at registration, rather
+  than assuming its own locally-generated id.
+
 ## [1.3.0] - 2025-01-12
 
 ### Changed

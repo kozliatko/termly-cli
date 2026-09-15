@@ -71,15 +71,18 @@ Installation typically completes in **10-30 seconds**.
 
 ## Environments
 
-Termly CLI supports three environments:
+Termly CLI supports three built-in environments, plus a self-hosted override:
 
 | Environment | Package | Command | Server URL | Use Case |
 |------------|---------|---------|------------|----------|
 | **Production** | `@termly-dev/cli` | `termly` | `wss://api.termly.dev` | End users |
 | **Development** | `@termly-dev/cli-dev` | `termly-dev` | `wss://dev-api.termly.dev` | Beta testers |
 | **Local** | Run from source | `TERMLY_ENV=local termly` | `ws://localhost:3000` | Developers only |
+| **Self-hosted** | Any | `TERMLY_SERVER_URL=wss://your-relay termly` | Your own relay | Self-hosted server |
 
-**Note:** Server URLs are hardcoded per environment and cannot be changed by users.
+**Note:** The built-in production/development/local server URLs are hardcoded
+and cannot be changed. `TERMLY_SERVER_URL` overrides all of them to point the
+CLI at a relay you run yourself — see [Self-Hosted](#self-hosted) below.
 
 ## Quick Start
 
@@ -108,6 +111,20 @@ npm install
 # Run with local environment
 TERMLY_ENV=local node bin/cli.js start
 ```
+
+### Self-Hosted
+
+Point the CLI at a relay you run yourself instead of `api.termly.dev`:
+
+```bash
+TERMLY_SERVER_URL=wss://termly.your-domain.example termly start
+```
+
+The URL flows into the pairing QR code too, so the mobile app connects to
+your relay rather than to a hardcoded `termly.dev` host. The HTTP origin is
+derived from it automatically (`wss://` → `https://`); set `TERMLY_API_URL`
+separately only if the REST API is served from a different host. With
+neither variable set, the CLI behaves exactly as before.
 
 ## Multiple Sessions
 
@@ -202,7 +219,9 @@ termly tools list       # your tools, merged with the built-ins
 `tools[]` adds new entries, `overrides{}` patches built-in ones. A "model" is
 just a tool definition with different `args` or `env`.
 
-See **[docs/CUSTOM_TOOLS.md](docs/CUSTOM_TOOLS.md)** for the full field reference.
+See **[docs/CUSTOM_TOOLS.md](docs/CUSTOM_TOOLS.md)** for the full field reference,
+or **[docs/examples/tools/](docs/examples/tools/)** for a worked example (a tmux
+window attached as an AI "tool").
 
 ## Commands
 
