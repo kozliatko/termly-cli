@@ -1,5 +1,7 @@
 # Termly CLI
 
+[![Snyk](https://github.com/kozliatko/termly-cli/actions/workflows/snyk.yml/badge.svg)](https://github.com/kozliatko/termly-cli/actions/workflows/snyk.yml)
+
 Access your AI coding assistants from any device. Works with Claude Code, Aider, GitHub Copilot, and any terminal-based AI tool.
 
 ## What's New in v1.9.5
